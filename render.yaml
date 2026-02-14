@@ -19,8 +19,3 @@ services:
         value: 8000
       - key: FLASK_ENV
         value: production
-  - type: pserv
-    name: fraudshield-db
-    plan: free
-    region: oregon
-    ipAllowList: []
