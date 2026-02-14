@@ -163,17 +163,21 @@ def predict(current_user):
         amount = float(data.get("amount", 0))
         transaction_type = int(data.get("transaction_type", 0))
         location = int(data.get("location", 0))
-        device = int(data.get("device", 0))
-        failed_attempts = int(data.get("failedAttempts", 0))
-        time = int(data.get("time", 0))
+        hour = int(data.get("hour", 12))
+        account_age_days = int(data.get("account_age_days", 365))
+        
+        # Feature engineering (same as training)
+        high_risk_hour = 1 if hour < 6 else 0
+        is_large_txn = 1 if amount > 25000 else 0
 
         features = [[
             amount,
             transaction_type,
             location,
-            device,
-            failed_attempts,
-            time
+            hour,
+            account_age_days,
+            high_risk_hour,
+            is_large_txn
         ]]
 
         prediction = model.predict(features)[0]

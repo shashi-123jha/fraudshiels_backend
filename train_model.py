@@ -159,6 +159,6 @@ print(feature_importance)
 # 9. Save Model
 # ============================================
 
-joblib.dump(best_model, "fraud_model_v2.pkl")
+joblib.dump(best_model, "fraud_model.pkl")
 
 print("\n✅ Advanced Model Trained and Saved Successfully!")
