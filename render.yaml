@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: fraudshield-backend
+    env: python
+    region: oregon
+    plan: free
+    
+    buildCommand: >
+      pip install --upgrade pip &&
+      pip install -r requirements.txt
+    
+    startCommand: >
+      python app.py
+    
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PORT
+        value: 8000
+      - key: FLASK_ENV
+        value: production
+
+  - type: pserv
+    name: fraudshield-db
+    plan: free
+    region: oregon
+    ipAllowList: []
