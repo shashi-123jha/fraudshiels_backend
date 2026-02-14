@@ -21,20 +21,36 @@ MONGO_URI = os.getenv("MONGO_URI")
 # APP SETUP
 # =====================================
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # =====================================
 # DATABASE CONNECTION
 # =====================================
-client = MongoClient(MONGO_URI)
-db = client["fraudshield"]
-users_collection = db["users"]
-transactions_collection = db["transactions"]
+try:
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client.server_info()  # Test connection
+    db = client["fraudshield"]
+    users_collection = db["users"]
+    transactions_collection = db["transactions"]
+except Exception as e:
+    print(f"MongoDB Connection Error: {e}")
+    users_collection = None
+    transactions_collection = None
 
 # =====================================
 # LOAD ML MODEL
 # =====================================
-model = joblib.load("fraud_model.pkl")
+try:
+    model = joblib.load("fraud_model.pkl")
+except Exception as e:
+    print(f"Model Loading Error: {e}")
+    model = None
 
 # =====================================
 # HOME ROUTE
@@ -74,6 +90,9 @@ def token_required(f):
 # =====================================
 @app.route("/api/auth/signup", methods=["POST"])
 def signup():
+    if not users_collection:
+        return jsonify({"error": "Database not available"}), 503
+    
     data = request.json
 
     name = data.get("name")
@@ -104,6 +123,9 @@ def signup():
 # =====================================
 @app.route("/api/auth/login", methods=["POST"])
 def login():
+    if not users_collection:
+        return jsonify({"error": "Database not available"}), 503
+    
     data = request.json
 
     email = data.get("email")
@@ -130,6 +152,11 @@ def login():
 @app.route("/predict", methods=["POST"])
 @token_required
 def predict(current_user):
+    if not model:
+        return jsonify({"error": "ML model not available"}), 503
+    if not transactions_collection:
+        return jsonify({"error": "Database not available"}), 503
+    
     data = request.json
 
     try:
@@ -177,4 +204,5 @@ def predict(current_user):
 # MAIN
 # =====================================
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
