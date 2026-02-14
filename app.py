@@ -90,7 +90,7 @@ def token_required(f):
 # =====================================
 @app.route("/api/auth/signup", methods=["POST"])
 def signup():
-    if not users_collection:
+    if users_collection is None:
         return jsonify({"error": "Database not available"}), 503
     
     data = request.json
@@ -123,7 +123,7 @@ def signup():
 # =====================================
 @app.route("/api/auth/login", methods=["POST"])
 def login():
-    if not users_collection:
+    if users_collection is None:
         return jsonify({"error": "Database not available"}), 503
     
     data = request.json
@@ -152,9 +152,9 @@ def login():
 @app.route("/predict", methods=["POST"])
 @token_required
 def predict(current_user):
-    if not model:
+    if model is None:
         return jsonify({"error": "ML model not available"}), 503
-    if not transactions_collection:
+    if transactions_collection is None:
         return jsonify({"error": "Database not available"}), 503
     
     data = request.json
